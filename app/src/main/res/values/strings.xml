@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BasicLauncher</string>
+    <string name="pm_obs_name">App install/uninstall watcher</string>
+</resources>

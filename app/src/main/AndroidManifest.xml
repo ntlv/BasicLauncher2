@@ -1,0 +1,44 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="se.ntlv.basiclauncher">
+
+    <application
+        android:name="se.ntlv.basiclauncher.BasicLauncherApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:launchMode="singleInstance"
+        android:stateNotNeeded="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name="se.ntlv.basiclauncher.MainActivity"
+            android:label="Apps"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".packagehandling.PackageManagerObserver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/pm_obs_name">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_CHANGED"/>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".packagehandling.AppChangeLoggerService"
+            android:exported="false"
+            />
+    </application>
+
+</manifest>

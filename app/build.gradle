@@ -1,0 +1,65 @@
+buildscript {
+    ext.kotlin_version = '1.0.1-2'
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        applicationId "se.ntlv.basiclauncher"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    dexOptions {
+        javaMaxHeapSize "2048M"
+    }
+}
+
+kapt {
+    generateStubs = true
+}
+
+dependencies {
+    //Basic compilation stuff
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    //Android support stuff
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:recyclerview-v7:23.4.0'
+
+    //Kotlin dependencies
+    compile 'org.jetbrains.anko:anko-sdk23:0.8.3' // sdk19, sdk21, sdk23 are also available
+    //compile 'org.jetbrains.anko:anko-sqlite:0.8.3'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+
+    //Dagger 2 dependencies
+    compile 'com.google.dagger:dagger:2.0.2'
+    kapt 'com.google.dagger:dagger-compiler:2.0.2'
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+
+    //RX
+    compile 'io.reactivex:rxandroid:1.2.0'
+    compile 'io.reactivex:rxjava:1.1.5'
+
+    //sqlbrite
+    compile 'com.squareup.sqlbrite:sqlbrite:0.6.3'
+}
