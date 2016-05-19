@@ -24,7 +24,7 @@ class PackageManagerObserver : BroadcastReceiver() {
         }
         val action = intent.action
         when (action) {
-            Intent.ACTION_INSTALL_PACKAGE ->
+            Intent.ACTION_PACKAGE_ADDED ->
                 AppChangeLoggerService.logPackageInstall(context, strippedPackageName)
             Intent.ACTION_PACKAGE_REMOVED ->
                 AppChangeLoggerService.logPackageRemove(context, strippedPackageName)

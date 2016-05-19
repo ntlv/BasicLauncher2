@@ -56,6 +56,8 @@ class AppDetailDB {
                     , "com.sonymobile.backgrounddefocus"
                     , "com.sonymobile.entrance"
                     , "com.giphy.messenger"
+                    , "com.android.shell"
+                    , "com.whirlscape.minuum"
                     , "com.google.android.googlequicksearchbox")
                     .map { AppDetail(it, it, false, true).toCv() }
 
