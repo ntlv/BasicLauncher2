@@ -1,24 +1,38 @@
 package se.ntlv.basiclauncher.dagger
 
+import android.app.Application
+import android.content.pm.PackageManager
 import dagger.Component
 import se.ntlv.basiclauncher.packagehandling.AppChangeLoggerService
-import se.ntlv.basiclauncher.MainActivity
-import javax.inject.Singleton
+import se.ntlv.basiclauncher.repository.AppDetailDB
+import java.io.File
+import javax.inject.Named
 
-
-@Singleton
+@ApplicationScope
 @Component(modules = arrayOf(ApplicationModule::class))
 interface ApplicationComponent {
 
-    companion object {
-        fun init(module: ApplicationModule) = DaggerApplicationComponent.builder()
-                .applicationModule(module)
-                .build()
-
+    object Init {
+        fun init(module: ApplicationModule): ApplicationComponent {
+            return DaggerApplicationComponent.builder()
+                    .applicationModule(module)
+                    .build()
+        }
     }
 
-    fun inject(target : AppChangeLoggerService)
+    fun application(): Application
 
-    fun inject(target : MainActivity)
+    fun db() : AppDetailDB
+
+    fun packageManager() : PackageManager
+
+    @Named("cache")
+    fun cache() : File
+
+    @Named("version")
+    fun version() : Int
+
+    fun inject(target: AppChangeLoggerService)
+
 }
 

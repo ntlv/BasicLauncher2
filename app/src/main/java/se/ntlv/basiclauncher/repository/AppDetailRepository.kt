@@ -13,18 +13,17 @@ class AppDetailRepository {
         mDb = db
     }
 
-    fun getPageApps() = makeAppsObserver(false)
-    fun getDockApps() = makeAppsObserver(true)
+    fun getPageApps() = makeAppsObserver(false, false)
+    fun getDockApps() = makeAppsObserver(true, false)
+    fun getIgnoredApps() = makeAppsObserver(false, true)
 
-    private fun makeAppsObserver(isDockPage: Boolean): Observable<List<AppDetail>> {
-        return mDb.getApps(isDockPage)
-                .mapToList({ it: Cursor ->
-                    val packageName = it.getString(0)
-                    val label = it.getString(1)
-                    val isDocked = it.getInt(2) == 1
-                    val isIgnored = it.getInt(3) == 1
-                    AppDetail(label, packageName, isDocked, isIgnored)
-                })
+    private fun makeAppsObserver(isDockPage: Boolean, isIgnored : Boolean): Observable<List<AppDetail>> {
+        return mDb.getApps(isDockPage, isIgnored)
+                .mapToList { it: Cursor -> AppDetail(it) }
+    }
+
+    fun updateAppDetails(packageName : String, ordinal: Int? = null, ignore: Boolean? = null) {
+        mDb.updatePackage(packageName, ordinal, ignore)
     }
 
 }

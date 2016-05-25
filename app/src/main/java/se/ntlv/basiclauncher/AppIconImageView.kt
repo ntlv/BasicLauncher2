@@ -1,15 +1,11 @@
 package se.ntlv.basiclauncher
 
 import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.ImageView
 import org.jetbrains.anko.custom.ankoView
-import rx.Observable
 import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
+import se.ntlv.basiclauncher.image.ImageLoaderCacher
 
 class AppIconImageView : ImageView {
     constructor(ctx: Context) : super(ctx)
@@ -23,13 +19,10 @@ class AppIconImageView : ImageView {
 
     private var loader: Subscription? = null
 
-    fun loadIcon(packageName: String, pm: PackageManager) {
+    fun loadIcon(packageName: String, imageLoaderCacher: ImageLoaderCacher, width: Int, height: Int) {
         loader?.unsubscribe()
-        loader = Observable.just(packageName)
-                .subscribeOn(Schedulers.io())
-                .map { it: String -> pm.getApplicationIcon(it)  }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { it: Drawable? -> setImageDrawable(it) }
+        loader = imageLoaderCacher.loadImage(packageName, this, width, height)
+
     }
 
     fun recycle() {

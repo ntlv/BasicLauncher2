@@ -11,26 +11,24 @@ import com.squareup.sqlbrite.BriteDatabase
 import com.squareup.sqlbrite.QueryObservable
 import com.squareup.sqlbrite.SqlBrite
 import rx.schedulers.Schedulers
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 
-@Singleton
 class AppDetailDB {
 
     companion object {
-        val version = 1
+        val version = 2
         val tableName = "app_cache"
         val IS_DOCKED = "is_docked"
         val PACKAGE_NAME = "package_name"
         val LABEL = "label"
         val IS_IGNORED = "is_ignored"
+        val ORDINAL = "ordinal"
 
         fun CREATE_TABLE(vararg field: String) = "create table $tableName(${field.joinToString ()}) "
     }
 
-    class Helper(ctx: Context, val appName: String) : SQLiteOpenHelper(ctx, tableName, null, version) {
+    private class Helper(ctx: Context, val appName: String) : SQLiteOpenHelper(ctx, tableName, null, version) {
+
         override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
             Log.d("Helper", "UPGRADING DB")
             db?.execSQL("DROP TABLE IF EXISTS $tableName")
@@ -44,10 +42,10 @@ class AppDetailDB {
                     "$PACKAGE_NAME text primary key",
                     "$LABEL text default notext",
                     "$IS_DOCKED integer default 0",
-                    "$IS_IGNORED integer default 0"
-
-
+                    "$IS_IGNORED integer default 0",
+                    "$ORDINAL integer default 0"
             ))
+
             val seedIgnored = arrayOf(
                     appName
                     , "com.android.settings"
@@ -59,14 +57,14 @@ class AppDetailDB {
                     , "com.android.shell"
                     , "com.whirlscape.minuum"
                     , "com.google.android.googlequicksearchbox")
-                    .map { AppDetail(it, it, false, true).toCv() }
+                    .map { AppDetail(it, it, false, true, 0).toCv() }
 
             val seedDocked = arrayOf(
+                    "com.Slack",
                     "com.google.android.apps.inbox",
-                    "com.spotify.music.canary",
                     "com.facebook.orca",
-                    "com.Slack")
-                    .map { AppDetail(it, it, true, false).toCv() }
+                    "com.spotify.music.canary")
+                    .mapIndexed { idx, name -> AppDetail(name, name, true, false, idx).toCv() }
             //TODO error handling lol
             seedIgnored.forEach { it: ContentValues -> db?.insert(tableName, null, it) }
             seedDocked.forEach { it: ContentValues -> db?.insert(tableName, null, it) }
@@ -75,36 +73,53 @@ class AppDetailDB {
         }
     }
 
-    private val brite: BriteDatabase
+    private val mDatabase: BriteDatabase
 
-    @Inject
-    constructor(ctx: Context, @Named("appName") self: String) {
+
+    constructor(ctx: Context, self: String) {
         Log.d("AppDetailDb", "CONSTRUCTING AN INSTANCE")
         val s = Helper(ctx, self)
-        val briteBase = SqlBrite.create()
-        brite = briteBase.wrapDatabaseHelper(s, Schedulers.io())
-        brite.setLoggingEnabled(true)
+        val briteDatabase = SqlBrite.create()
+        mDatabase = briteDatabase.wrapDatabaseHelper(s, Schedulers.io())
+        mDatabase.setLoggingEnabled(true)
     }
 
-    fun getApps(isDocked: Boolean): QueryObservable {
-        val dockArg = (if (isDocked) 1 else 0).toString()
-        return brite.createQuery(tableName, "SELECT * FROM $tableName WHERE $IS_DOCKED =? AND $IS_IGNORED = 0 ORDER BY $PACKAGE_NAME ASC", dockArg)
+    fun getApps(isDocked: Boolean, isIgnored : Boolean): QueryObservable {
+        val dockArg = isDocked.toInt().toString()
+        val ignoredArg = isIgnored.toInt().toString()
+
+        val select = "SELECT * FROM $tableName "
+        val where = "WHERE $IS_DOCKED = ? AND $IS_IGNORED = ?"
+        val orderBy = "ORDER BY $ORDINAL DESC, $PACKAGE_NAME ASC"
+
+        return mDatabase.createQuery(tableName, "$select $where $orderBy", dockArg, ignoredArg)
     }
 
-    fun insert(vararg apps: AppDetail, overwrite : Boolean = false): List<Long> {
-        val t = brite.newTransaction()
-        val results : List<Long>
-        try {
-            val conflictAlgorithm = if (overwrite) CONFLICT_REPLACE else CONFLICT_IGNORE
-            results = apps.map { brite.insert(tableName, it.toCv(), conflictAlgorithm) }
-            t.markSuccessful()
-        } finally {
-            t.end()
+    fun insert(vararg apps: AppDetail, overwrite: Boolean = false): List<Long> {
+        val conflictAlgorithm = when {
+            overwrite -> CONFLICT_REPLACE
+            else -> CONFLICT_IGNORE
         }
+        val t = mDatabase.newTransaction()
+        val results = apps.map { mDatabase.insert(tableName, it.toCv(), conflictAlgorithm) }
+        t.markSuccessful()
+        t.end()
+
         return results
     }
 
     fun delete(appPackageName: String): Int {
-        return brite.delete(tableName, "$PACKAGE_NAME = ?", appPackageName)
+        return mDatabase.delete(tableName, "$PACKAGE_NAME = ?", appPackageName)
     }
+
+    fun updatePackage(packageName: String, ordinal: Int? = null, ignore : Boolean? = null) {
+        val cv = ContentValues(2)
+        if (ordinal != null) cv.put("$ORDINAL", ordinal)
+        if (ignore != null) cv.put("$IS_IGNORED", ignore.toInt())
+        mDatabase.update(tableName, cv, "$PACKAGE_NAME = ?", packageName)
+    }
+}
+
+fun Boolean.toInt(): Int {
+    return if (this) 1 else 0
 }

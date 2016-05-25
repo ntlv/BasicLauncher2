@@ -1,0 +1,5 @@
+<root>
+  <item name='java.lang.ref.Reference T get()'>
+    <annotation name='android.support.annotation.Nullable' />
+  </item>
+</root>

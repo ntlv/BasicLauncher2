@@ -1,34 +1,47 @@
 package se.ntlv.basiclauncher.dagger
 
 import android.app.Application
+import android.content.Context
+import android.content.pm.PackageManager
 import dagger.Module
 import dagger.Provides
-import org.jetbrains.anko.defaultSharedPreferences
 import se.ntlv.basiclauncher.repository.AppDetailDB
 import javax.inject.Named
-import javax.inject.Singleton
 
-@Singleton
 @Module
-class ApplicationModule(private val app : Application) {
+class ApplicationModule(private val app: Application) {
 
     @Provides
-    @Singleton
+    @ApplicationScope
     fun provideApplication() = app
 
     @Provides
-    @Singleton
-    fun provideAppDetailDb() = AppDetailDB(app, app.packageName)
+    @ApplicationScope
+    fun provideContext() : Context = app
 
     @Provides
-    @Named("appName")
-    fun providesAppName() = app.packageName
+    @ApplicationScope
+    fun providePackageManager() : PackageManager = app.packageManager
 
     @Provides
-    @Singleton
-    fun providePreferences() = app.defaultSharedPreferences
+    @ApplicationScope
+    fun provideDatabase() : AppDetailDB = AppDetailDB(app, app.packageName)
+
+//    @Provides
+//    @ApplicationScope
+//    fun providesImageLoaderErrorHandler(repo: AppDetailDB) = ImageLoaderErrorHandler(repo)
+
+//    @Provides
+//    fun provideImageLoader(pm : PackageManager, errorHandler : ImageLoaderErrorHandler) =
+//            ImageLoader(pm, errorHandler)
 
     @Provides
-    @Singleton
-    fun providePackageManager() = app.packageManager
+    @Named("cache")
+    fun providesCache() = app.cacheDir
+
+    @Provides
+    @Named("version")
+    fun providesVersion() = app.packageManager.getPackageInfo(app.packageName, 0).versionCode
+
+
 }

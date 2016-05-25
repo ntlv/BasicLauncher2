@@ -15,8 +15,10 @@ class AppChangeLoggerService : IntentService("AppChangeLoggerService") {
 
     val TAG = AppChangeLoggerService::class.java.simpleName
 
-    @Inject lateinit var db: AppDetailDB
-    @Inject lateinit var pM: PackageManager
+    @Inject
+    lateinit var db: AppDetailDB
+    @Inject
+    lateinit var pM: PackageManager
 
     companion object {
         private val EXTRA_PACKAGE_NAME = "extra_package_name"
@@ -94,7 +96,7 @@ class AppChangeLoggerService : IntentService("AppChangeLoggerService") {
         launchIntents.map {
             val label = it.loadLabel(pM).toString()
             val packageName = it.activityInfo.packageName
-            AppDetail(label, packageName, false, false)
+            AppDetail(label, packageName, false, false, 0)
         }.let {
             val insertions = it.toTypedArray()
             db.insert(*insertions, overwrite = false)
@@ -103,9 +105,14 @@ class AppChangeLoggerService : IntentService("AppChangeLoggerService") {
 
     private fun doLogPackageInstall(pName: String) {
         Log.d(TAG, "Log installation of $pName")
+        val launchable = pM.getLaunchIntentForPackage(pName)
+        if (launchable == null) {
+            Log.v(TAG, "Skipping logging of package install, unable to find launchable activity for $pName")
+            return
+        }
         val info = pM.getApplicationInfo(pName, 0)
         val label = info.loadLabel(pM).toString()
-        val appDetails = AppDetail(label, pName, false, false)
+        val appDetails = AppDetail(label, pName, false, false, 0)
         db.insert(appDetails, overwrite = false)
     }
 

@@ -1,9 +1,9 @@
 package se.ntlv.basiclauncher
 
-import android.content.pm.PackageManager
 import android.support.v4.view.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
+import se.ntlv.basiclauncher.appgrid.AppDetailLayoutFactory
 import se.ntlv.basiclauncher.repository.AppDetail
 import java.util.*
 
@@ -11,35 +11,26 @@ class AppAdapter : PagerAdapter {
 
     private val apps: List<List<AppDetail>>
 
-    private val mRows: Int
-    private val mCols: Int
+    private val mFactory: AppDetailLayoutFactory
 
-    private var mCellWidth: Int
-    private var mCellHeight: Int
+    private val gridDimens : GridDimensions
+    private val cellDimens : CellDimensions
 
-    private val mOnClick: (View, String) -> Unit
-    private val mOnLongClick: (String) -> Boolean
+    constructor(items: List<AppDetail>,
+                gridDimensions: GridDimensions,
+                cellDimensions: CellDimensions,
+                factory: AppDetailLayoutFactory) : super() {
 
-    private val mPm: PackageManager
+        gridDimens = gridDimensions
+        cellDimens = cellDimensions
 
-    constructor(pm : PackageManager,
-                items: List<AppDetail>,
-                rows: Int, cols: Int,
-                cellWidth: Int,
-                cellHeight: Int,
-                onClick: (View, String) -> Unit,
-                onLongClick: (String) -> Boolean
-                ) : super() {
-        mRows = rows
-        mCols = cols
-        mCellWidth = cellWidth
-        mCellHeight = cellHeight
+        mFactory = factory
 
         val listList: MutableList<List<AppDetail>> = ArrayList()
         var tempList: MutableList<AppDetail> = ArrayList()
         items.forEach {
             tempList.add(it)
-            if (tempList.size >= mRows * mCols) {
+            if (tempList.size >= gridDimens.size) {
                 listList.add(tempList)
                 tempList = ArrayList()
             }
@@ -48,19 +39,15 @@ class AppAdapter : PagerAdapter {
             listList.add(tempList)
         }
         apps = listList
-
-        mPm = pm
-        mOnClick = onClick
-        mOnLongClick = onLongClick
     }
 
     override fun getCount(): Int = apps.size
 
     override fun instantiateItem(container: ViewGroup?, position: Int): Any? {
-
-        val context = container?.context ?: throw IllegalStateException("Need valid context to do things")
         val page = apps[position]
-        val grid = AppDetailLayout(mPm, page, mCols, mRows + 1, context, mCellWidth, mCellHeight, mOnClick, mOnLongClick)
+
+        val grid = mFactory.makeLayout(page, gridDimens, cellDimens)
+
         container?.addView(grid.getView())
         return grid
     }

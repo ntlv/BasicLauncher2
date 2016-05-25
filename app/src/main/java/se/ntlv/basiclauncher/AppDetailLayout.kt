@@ -1,89 +1,43 @@
 package se.ntlv.basiclauncher
 
-import android.content.Context
-import android.content.pm.PackageManager
-import android.support.v4.view.ViewPager
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
-import org.jetbrains.anko.*
+import org.jetbrains.anko.find
+import org.jetbrains.anko.forEachChild
+import se.ntlv.basiclauncher.appgrid.AppGridFactory
 import se.ntlv.basiclauncher.repository.AppDetail
 
 
 class AppDetailLayout {
 
-    private var apps: List<AppDetail>
+    private val view: ViewGroup
 
-    private var view: GridLayout
-
-    constructor (pm: PackageManager,
+    constructor (factory: AppGridFactory,
                  items: List<AppDetail>,
-                 cols: Int,
-                 rows: Int,
-                 context: Context,
-                 cellWidth: Int,
-                 cellHeight: Int,
-                 onClick: (View, String) -> Unit,
-                 onLongClick: (String) -> Boolean
-    ) {
+                 gridDimens: GridDimensions,
+                 cellDimens: CellDimensions) {
 
-        apps = items
-        if (apps.size > rows * cols) {
-            throw IllegalStateException("Icons will not fit on screen.")
-        }
+        assert(items.size > gridDimens.size, { "Icons will not fit on screen." })
 
-
-        view = context.gridLayout {
-            rowCount = rows
-            columnCount = cols
-            layoutParams = ViewPager.LayoutParams()
-        }
-        apps.forEach {
-            val cell = makeCell(context, pm, it.packageName, cellWidth, cellHeight, onClick, onLongClick)
-            view.addView(cell)
-        }
+        view = factory.makeGrid(gridDimens, cellDimens, items)
     }
 
+    fun getView(): ViewGroup = view
 
-    fun getView(): ViewGroup {
-        return view
+    fun unload() = view.forEachChild {
+        it.find<AppIconImageView>(R.id.icon_view1).recycle()
     }
-
-    fun unload() {
-        view.forEachChild {
-            (it as LinearLayout).find<AppIconImageView>(R.id.icon_view1).recycle()
-        }
-    }
-
-    private fun makeCell(ctx: Context,
-                         manager: PackageManager,
-                         packageName: String,
-                         targetWidth: Int,
-                         targetHeight: Int,
-                         clickHandler: (View, String) -> Unit,
-                         longClickHandler: (String) -> Boolean
-    ): LinearLayout {
-        val layout = ctx.verticalLayout {
-            id = R.id.container1
-            backgroundResource = R.drawable.ripple
-            gravity = Gravity.CENTER
-            val image = appIconImageView {
-                gravity = Gravity.CENTER
-                id = R.id.icon_view1;
-                scaleType = ImageView.ScaleType.FIT_CENTER
-                padding = 24
-            }.lparams(width = targetWidth, height = targetHeight)
-
-            image.loadIcon(packageName, manager)
-            onClick { clickHandler(this, packageName)}
-            onLongClick {longClickHandler(packageName) }
-        }
-        return layout
-    }
-
 }
+
+interface AppCellClickHandler {
+    fun onClick(view: View, appDetail: AppDetail)
+    fun onLongClick(appDetail: AppDetail): Boolean
+}
+
+data class GridDimensions(val rowCount: Int, val columnCount: Int) {
+    val size: Int get() = rowCount * columnCount
+}
+
+data class CellDimensions(val width: Int, val height: Int)
 
 

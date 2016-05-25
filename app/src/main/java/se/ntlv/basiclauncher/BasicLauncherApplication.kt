@@ -14,6 +14,6 @@ class BasicLauncherApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        graph = ApplicationComponent.init(ApplicationModule(this))
+        graph = ApplicationComponent.Init.init(ApplicationModule(this))
     }
 }
