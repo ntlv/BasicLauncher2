@@ -2,9 +2,12 @@ package se.ntlv.basiclauncher
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.DragEvent
+import android.view.ViewManager
 import android.widget.ImageView
 import org.jetbrains.anko.custom.ankoView
 import rx.Subscription
+import se.ntlv.basiclauncher.appgrid.AppIconDragDelegate
 import se.ntlv.basiclauncher.image.ImageLoaderCacher
 
 class AppIconImageView : ImageView {
@@ -16,6 +19,18 @@ class AppIconImageView : ImageView {
 
     constructor(ctx: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(ctx, attrs, defStyleAttr, defStyleRes)
 
+    override fun onDragEvent(event: DragEvent): Boolean {
+        return when {
+            mDragDelegate.onDragEvent(this, event) -> true
+            else -> super.onDragEvent(event)
+        }
+    }
+
+    lateinit var mDragDelegate: AppIconDragDelegate
+
+    fun bind(delegate: AppIconDragDelegate) {
+        mDragDelegate = delegate
+    }
 
     private var loader: Subscription? = null
 
@@ -30,6 +45,6 @@ class AppIconImageView : ImageView {
     }
 }
 
-fun android.view.ViewManager.appIconImageView(init: AppIconImageView.() -> Unit = {}) =
+fun ViewManager.appIconImageView(init: AppIconImageView.() -> Unit = {}) =
         ankoView({ AppIconImageView(it) }, init)
 

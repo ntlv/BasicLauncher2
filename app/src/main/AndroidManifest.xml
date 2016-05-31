@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="se.ntlv.basiclauncher">
 
+
+    <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:name="se.ntlv.basiclauncher.BasicLauncherApplication"
         android:allowBackup="true"
@@ -9,6 +11,8 @@
         android:launchMode="singleInstance"
         android:stateNotNeeded="true"
         android:theme="@style/AppTheme">
+
+
 
         <activity
             android:name="se.ntlv.basiclauncher.MainActivity"
@@ -25,7 +29,7 @@
         </activity>
 
         <receiver
-            android:name=".packagehandling.PackageManagerObserver"
+            android:name="se.ntlv.basiclauncher.packagehandling.PackageManagerObserver"
             android:enabled="true"
             android:exported="true"
             android:label="@string/pm_obs_name">
@@ -37,9 +41,19 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".packagehandling.AppChangeLoggerService"
+        <service android:name="se.ntlv.basiclauncher.packagehandling.AppChangeLoggerService"
             android:exported="false"
             />
+
+        <service android:name="se.ntlv.basiclauncher.database.DbCleaner"
+            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
+            </intent-filter>
+        </service>
     </application>
+
+
 
 </manifest>

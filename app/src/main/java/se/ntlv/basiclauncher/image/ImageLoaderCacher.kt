@@ -17,7 +17,8 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import se.ntlv.basiclauncher.repository.ImageLoaderErrorHandler
+import se.ntlv.basiclauncher.database.ImageLoaderErrorHandler
+import se.ntlv.basiclauncher.tag
 import java.io.*
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
@@ -29,7 +30,7 @@ class ImageLoaderCacher : Closeable {
     private val mCacheDir: File
     private val mVersion: Int
 
-    private val TAG = ImageLoaderCacher::class.java.simpleName
+    private val TAG = tag()
 
     private val zipper =
             { i: String, c: Boolean, m: LruCache<String, Drawable>, d: DiskLruCache, r: Resources ->

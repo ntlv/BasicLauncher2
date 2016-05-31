@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item type="id" name="icon_view1"/>
+    <item type="id" name="app_icon_view"/>
     <item type="id" name="icon_view2"/>
     <item type="id" name="container1"/>
     <item type="id" name="container2"/>
@@ -10,4 +10,5 @@
     <item type="id" name="grid"/>
     <item type="id" name="view_pager_main"/>
     <item type="id" name="dock"/>
+    <item type="id" name="app_icons_container"/>
 </resources>

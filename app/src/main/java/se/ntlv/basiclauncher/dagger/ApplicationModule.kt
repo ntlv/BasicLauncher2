@@ -3,45 +3,43 @@ package se.ntlv.basiclauncher.dagger
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import com.google.android.gms.gcm.GcmNetworkManager
 import dagger.Module
 import dagger.Provides
-import se.ntlv.basiclauncher.repository.AppDetailDB
+import org.jetbrains.anko.defaultSharedPreferences
+import se.ntlv.basiclauncher.database.AppDetailDB
+import se.ntlv.basiclauncher.database.GlobalConfig
+import java.io.File
 import javax.inject.Named
+import javax.inject.Singleton
 
 @Module
 class ApplicationModule(private val app: Application) {
 
     @Provides
-    @ApplicationScope
-    fun provideApplication() = app
+    fun provideApplication(): Application = app
 
     @Provides
-    @ApplicationScope
-    fun provideContext() : Context = app
+    fun provideContext(): Context = app
 
     @Provides
-    @ApplicationScope
-    fun providePackageManager() : PackageManager = app.packageManager
+    fun providePackageManager(): PackageManager = app.packageManager
 
+    @Singleton
     @Provides
-    @ApplicationScope
-    fun provideDatabase() : AppDetailDB = AppDetailDB(app, app.packageName)
-
-//    @Provides
-//    @ApplicationScope
-//    fun providesImageLoaderErrorHandler(repo: AppDetailDB) = ImageLoaderErrorHandler(repo)
-
-//    @Provides
-//    fun provideImageLoader(pm : PackageManager, errorHandler : ImageLoaderErrorHandler) =
-//            ImageLoader(pm, errorHandler)
+    fun provideDatabase(): AppDetailDB = AppDetailDB(app)
 
     @Provides
     @Named("cache")
-    fun providesCache() = app.cacheDir
+    fun providesCacheDir(): File = app.cacheDir
 
     @Provides
     @Named("version")
-    fun providesVersion() = app.packageManager.getPackageInfo(app.packageName, 0).versionCode
+    fun providesAppVersion(): Int = app.packageManager.getPackageInfo(app.packageName, 0).versionCode
 
+    @Provides
+    fun provideGcmManager() : GcmNetworkManager = GcmNetworkManager.getInstance(app)
 
+    @Provides
+    fun provideConfig() : GlobalConfig = GlobalConfig(app.defaultSharedPreferences)
 }

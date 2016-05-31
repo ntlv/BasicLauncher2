@@ -4,11 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import se.ntlv.basiclauncher.tag
 
 
 class PackageManagerObserver : BroadcastReceiver() {
 
-    val TAG = PackageManagerObserver::class.java.simpleName
+    val TAG = tag()
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d("PackageManagerObserver", "Received intent $intent")

@@ -39,3 +39,6 @@ captures/
 *.iml
 *.pro
 
+# kotlin stuff
+annotations/
+

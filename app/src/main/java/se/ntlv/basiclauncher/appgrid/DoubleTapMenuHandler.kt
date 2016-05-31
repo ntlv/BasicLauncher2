@@ -1,19 +1,20 @@
 package se.ntlv.basiclauncher.appgrid
 
 import android.content.Context
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import org.jetbrains.anko.AlertDialogBuilder
 import rx.android.schedulers.AndroidSchedulers
-import se.ntlv.basiclauncher.repository.AppDetailRepository
+import se.ntlv.basiclauncher.database.AppDetailRepository
+import se.ntlv.basiclauncher.tag
 
 class DoubleTapMenuHandler {
 
-
     private val mDetector: GestureDetector
     private val mDb: AppDetailRepository
-    private val mContext : Context
+    private val mContext: Context
 
     constructor(context: Context, db: AppDetailRepository) {
         val simpleDetector = object : GestureDetector.SimpleOnGestureListener() {
@@ -42,9 +43,13 @@ class DoubleTapMenuHandler {
                 }
     }
 
+    val TAG = tag()
+
     fun bind(eventOrigin: View?) {
-        eventOrigin?.setOnTouchListener { view, event -> mDetector.onTouchEvent(event) }
+        eventOrigin?.setOnTouchListener { view, event ->
+            Log.d(TAG, "sample")
+            mDetector.onTouchEvent(event)
+        }
     }
 }
-
 

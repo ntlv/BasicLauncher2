@@ -24,7 +24,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -62,4 +62,8 @@ dependencies {
 
     //sqlbrite
     compile 'com.squareup.sqlbrite:sqlbrite:0.6.3'
+
+    //play services
+    compile 'com.google.android.gms:play-services-gcm:9.0.0'
+
 }

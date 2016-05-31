@@ -5,4 +5,5 @@
     <color name="black_40">#66000000</color>
     <color name="black_60">#99000000</color>
     <color name="black_87">#e0000000</color>
+    <color name="placeholder">@android:color/transparent</color>
 </resources>

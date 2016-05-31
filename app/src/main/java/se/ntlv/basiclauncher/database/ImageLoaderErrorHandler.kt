@@ -1,4 +1,4 @@
-package se.ntlv.basiclauncher.repository
+package se.ntlv.basiclauncher.database
 
 import android.util.Log
 

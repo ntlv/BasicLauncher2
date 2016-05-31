@@ -1,13 +1,90 @@
 package se.ntlv.basiclauncher
 
 import android.app.ActivityOptions
+import android.content.ClipData
+import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.view.DragEvent
 import android.view.View
 import android.view.animation.Animation
+import android.widget.CheckBox
+import org.jetbrains.anko.*
 import rx.Observable
 import rx.Subscriber
+import se.ntlv.basiclauncher.database.AppDetail
+import se.ntlv.basiclauncher.database.AppDetailRepository
 
+private val DRAG_EVENT_APP_DETAIL_FIELD = "meta"
+
+fun showAppMenu(context: Context, repository: AppDetailRepository, appDetail: AppDetail): Boolean {
+
+
+    val builder = AlertDialogBuilder(context)
+    builder.title("Configure ${appDetail.label}")
+    builder.cancellable(true)
+
+    var ignoreCheckBox: CheckBox? = null
+    var dockCheckBox: CheckBox? = null
+    builder.customView {
+        verticalLayout {
+            ignoreCheckBox = checkBox("Ignored")
+            dockCheckBox = checkBox("Docked") {
+                isChecked = appDetail.isDock
+            }
+            horizontalPadding = dip(24)
+        }
+    }
+    builder.positiveButton("Apply", {
+        val ignore = ignoreCheckBox?.isChecked ?: false
+        val dock = dockCheckBox?.isChecked ?: false
+        repository.updateAppDetails(appDetail.packageName, ignore, dock)
+        dismiss()
+    })
+    builder.negativeButton("App settings", {
+        val packageUri = Uri.parse("package:${appDetail.packageName}")
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(packageUri)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        context.startActivity(intent)
+    })
+
+
+    builder.show()
+    return true
+
+}
+
+
+
+fun i2e(event: DragEvent?): String {
+    return when (event?.action) {
+        null -> "null"
+        DragEvent.ACTION_DRAG_STARTED -> "started"
+        DragEvent.ACTION_DRAG_ENTERED -> "entered"
+        DragEvent.ACTION_DRAG_LOCATION -> "location"
+        DragEvent.ACTION_DRAG_EXITED -> "exited"
+        DragEvent.ACTION_DRAG_ENDED -> "ended"
+        else -> "<<<${event?.action}>>>"
+    }
+}
+
+fun AppDetail.asClipData(): ClipData {
+    val intent = Intent()
+    intent.putExtra(DRAG_EVENT_APP_DETAIL_FIELD, this)
+    val data = ClipData.Item(intent)
+    return ClipData(label, arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT), data)
+}
+
+fun DragEvent.getAppDetails(): AppDetail {
+    val base = clipData.getItemAt(0).intent.extras
+    base.classLoader = AppDetail::class.java.classLoader
+    val unCast = base.get(DRAG_EVENT_APP_DETAIL_FIELD)
+    return unCast as AppDetail
+}
 
 enum class AnimationEvent {
     START,
@@ -50,7 +127,7 @@ fun listenForAnimationEvent(anim: Animation,
     return obs
 }
 
-fun Context.startActivityWithClipReveal(intent : Intent, originateAt : View) {
+fun Context.startActivityWithClipReveal(intent: Intent, originateAt: View) {
     val originY = originateAt.height / 2
     val originX = originateAt.width / 2
     val startOptions = ActivityOptions.makeClipRevealAnimation(originateAt, originX, originY, 10, 10)
@@ -60,5 +137,5 @@ fun Context.startActivityWithClipReveal(intent : Intent, originateAt : View) {
 
 fun <A, B> pickSecond() = { a: A, b: B -> b }
 
-
+inline fun <reified T : Any> T.tag() = javaClass.simpleName
 
